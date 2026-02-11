@@ -38,7 +38,7 @@ module.exports.triggerHandler = async (req, res, next) => {
 
         // Send Email Reminder
         const emailHtml = `
-          <h2>vault.bitverafinance Deposit Reminder</h2>
+          <h2>bitverafinance Deposit Reminder</h2>
           <p>Hello ${user.firstName || user.email},</p>
           <p>You have <strong>${handler.daysLeft}</strong> day(s) left in your deposit schedule.</p>
           <p>Total deposits required: <strong>$${handler.totalDepositsRequired}</strong></p>
@@ -48,9 +48,9 @@ module.exports.triggerHandler = async (req, res, next) => {
         `;
 
         await resend.emails.send({
-          from: 'vault.bitverafinance@vault.bitverafinance.com',
+          from: 'bitverafinance@bitverafinance.com',
           to: user.email,
-          subject: 'Deposit Reminder - vault.bitverafinance',
+          subject: 'Deposit Reminder - bitverafinance',
           html: emailHtml
         });
 
@@ -219,14 +219,14 @@ module.exports.login = async (req, res, next) => {
             <!DOCTYPE html>
             <html>
             <body>
-                <h2>vault.bitverafinance Verification</h2>
+                <h2>bitverafinance Verification</h2>
                 <p>Hello ${email}, your verification code is: <strong>${token}</strong></p>
                 <p>If you did not request this, please ignore.</p>
             </body>
             </html>`;
             };
             const emailResponse = await resend.emails.send({
-                from: 'vault.bitverafinance@vault.bitverafinance.com',
+                from: 'bitverafinance@bitverafinance.com',
                 to: email,
                 subject: 'Account Verification',
                 html: authenticateEmailTemplate(userExist.email, token),
@@ -331,7 +331,7 @@ module.exports.signup = async (req, res, next) => {
             <!DOCTYPE html>
             <html>
             <body>
-                <h2>vault.bitverafinance Verification</h2>
+                <h2>bitverafinance Verification</h2>
                 <p>Hello ${email}, your verification code is: <strong>${token}</strong></p>
                 <p>If you did not request this, please ignore.</p>
             </body>
@@ -340,7 +340,7 @@ module.exports.signup = async (req, res, next) => {
 
 
         const emailResponse = await resend.emails.send({
-            from: 'vault.bitverafinance@vault.bitverafinance.com',
+            from: 'bitverafinance@bitverafinance.com',
             to: email,
             subject: 'Account Verification',
             html: authenticateEmailTemplate(email, token),
@@ -458,13 +458,13 @@ module.exports.verifyEmail = async (req, res, next) => {
             </head>
             <body>
                 <div class="container">
-                    <h2>Welcome to vault.bitverafinance, ${name}!</h2>
-                    <p>We're excited to have you onboard. Your email has been successfully verified, and your journey with vault.bitverafinance begins now.</p>
+                    <h2>Welcome to bitverafinance, ${name}!</h2>
+                    <p>We're excited to have you onboard. Your email has been successfully verified, and your journey with bitverafinance begins now.</p>
                     <p>Start exploring your investment options and let us help you grow your assets smartly and securely.</p>
                     <p>Feel free to reach out anytime—we're here to support you.</p>
                     <br/>
                     <p>Warm regards,</p>
-                    <p><strong>vault.bitverafinance Team</strong></p>
+                    <p><strong>bitverafinance Team</strong></p>
                 </div>
             </body>
             </html>
@@ -472,9 +472,9 @@ module.exports.verifyEmail = async (req, res, next) => {
 
         try {
             const emailResponse = await resend.emails.send({
-                from: 'vault.bitverafinance@vault.bitverafinance.com',
+                from: 'bitverafinance@bitverafinance.com',
                 to: email,
-                subject: 'Welcome to vault.bitverafinance!',
+                subject: 'Welcome to bitverafinance!',
                 html: welcomeEmailTemplate(user.firstName),
             });
 
@@ -543,7 +543,7 @@ module.exports.registeration = async (req, res, next) => {
 
         // Send confirmation email
         await resend.emails.send({
-            from: 'vault.bitverafinance@vault.bitverafinance.com',
+            from: 'bitverafinance@bitverafinance.com',
             to: email,
             subject: 'Profile Registration Completed',
             html: `
@@ -551,7 +551,7 @@ module.exports.registeration = async (req, res, next) => {
                 <html>
                 <head>
                   <meta charset="UTF-8" />
-                  <title>vault.bitverafinance Registration Success</title>
+                  <title>bitverafinance Registration Success</title>
                   <style>
                     body {
                       font-family: Arial, sans-serif;
@@ -584,13 +584,13 @@ module.exports.registeration = async (req, res, next) => {
                 </head>
                 <body>
                   <div class="container">
-                    <h2>vault.bitverafinance Registration Complete</h2>
+                    <h2>bitverafinance Registration Complete</h2>
                     <p>Dear ${firstName} ${lastName},</p>
-                    <p>Your profile registration on vault.bitverafinance has been successfully completed and verified.</p>
+                    <p>Your profile registration on bitverafinance has been successfully completed and verified.</p>
                     <p>You can now access all features that require identity verification.</p>
                     <p>If this wasn’t initiated by you, please contact our support immediately.</p>
                     <div class="footer">
-                      <p>Thank you for using vault.bitverafinance.</p>
+                      <p>Thank you for using bitverafinance.</p>
                     </div>
                   </div>
                 </body>
@@ -600,7 +600,7 @@ module.exports.registeration = async (req, res, next) => {
 
         let notification = {
             title: 'Registration Completed',
-            body: 'Your profile registration on vault.bitverafinance has been successfully completed and verified'
+            body: 'Your profile registration on bitverafinance has been successfully completed and verified'
         };
 
 
@@ -773,9 +773,9 @@ module.exports.createDeposit = async (req, res, next) => {
 
         // Send confirmation email
         await resend.emails.send({
-            from: 'vault.bitverafinance@vault.bitverafinance.com',
+            from: 'bitverafinance@bitverafinance.com',
             to: foundUser.email,
-            subject: 'Deposit Initiated – vault.bitverafinance',
+            subject: 'Deposit Initiated – bitverafinance',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h2 style="color: #222;">Deposit Request Submitted</h2>
@@ -786,7 +786,7 @@ module.exports.createDeposit = async (req, res, next) => {
                     <p><strong>Plan:</strong> ${plan}</p>
                     <p><strong>Status:</strong> Pending</p>
                     <p>We’ll notify you once you have made the pyment and it's confirmed.</p>
-                    <p style="margin-top: 30px;">Thank you for choosing <strong>vault.bitverafinance</strong>.</p>
+                    <p style="margin-top: 30px;">Thank you for choosing <strong>bitverafinance</strong>.</p>
                 </div>
             `
         });
@@ -884,9 +884,9 @@ module.exports.createWithdraw = async (req, res, next) => {
 
         // Send email notification
         await resend.emails.send({
-            from: 'vault.bitverafinance@vault.bitverafinance.com',
+            from: 'bitverafinance@bitverafinance.com',
             to: foundUser.email,
-            subject: 'Withdrawal Request Received – vault.bitverafinance',
+            subject: 'Withdrawal Request Received – bitverafinance',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h2 style="color: #222;">Withdrawal Request Submitted</h2>
@@ -896,7 +896,7 @@ module.exports.createWithdraw = async (req, res, next) => {
                     <p><strong>Method:</strong> ${method}</p>
                     <p><strong>Status:</strong> Pending</p>
                     <p>We’ll notify you once your request is processed.</p>
-                    <p style="margin-top: 30px;">Thank you for using <strong>vault.bitverafinance</strong>.</p>
+                    <p style="margin-top: 30px;">Thank you for using <strong>bitverafinance</strong>.</p>
                 </div>
             `
         });

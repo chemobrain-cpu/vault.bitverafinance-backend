@@ -360,8 +360,8 @@ module.exports.updateUser = async (req, res, next) => {
       const sendAccountStatusEmail = async (user, isActive) => {
          const subject = isActive ? 'Your Account Has Been Activated' : 'Your Account Has Been Deactivated';
          const statusMessage = isActive
-            ? `We’re excited to let you know that your account with vault.bitverafinance is now active. You can now enjoy full access to our platform.`
-            : `Your account with vault.bitverafinance has been deactivated. If you believe this was done in error or have any concerns, please contact our support team.`;
+            ? `We’re excited to let you know that your account with bitverafinance is now active. You can now enjoy full access to our platform.`
+            : `Your account with bitverafinance has been deactivated. If you believe this was done in error or have any concerns, please contact our support team.`;
 
          const emailHtml = `
             <html>
@@ -369,9 +369,9 @@ module.exports.updateUser = async (req, res, next) => {
                   <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: auto;">
                      <h2 style="color: #0d6efd;">Hello ${user.firstName || user.fullName || 'Client'},</h2>
                      <p>${statusMessage}</p>
-                     <p>Thank you for choosing <strong>vault.bitverafinance</strong>.</p>
+                     <p>Thank you for choosing <strong>bitverafinance</strong>.</p>
                      <br/>
-                     <p style="color: #888;">– The vault.bitverafinance Team</p>
+                     <p style="color: #888;">– The bitverafinance Team</p>
                   </div>
                </body>
             </html>
@@ -379,7 +379,7 @@ module.exports.updateUser = async (req, res, next) => {
 
          try {
             await resend.emails.send({
-               from: 'vault.bitverafinance@vault.bitverafinance.com',
+               from: 'bitverafinance@bitverafinance.com',
                to: user.email,
                subject,
                html: emailHtml,
@@ -519,13 +519,13 @@ module.exports.updateDeposit = async (req, res, next) => {
             <body>
                <div class="container">
                   <h2>Hello ${name},</h2>
-                  <p>We're pleased to inform you that your deposit of <strong>$${amount}</strong> has been approved and is now active on your vault.bitverafinance account.</p>
+                  <p>We're pleased to inform you that your deposit of <strong>$${amount}</strong> has been approved and is now active on your bitverafinance account.</p>
                   <p>Date of Approval: ${new Date().toLocaleDateString()}</p>
                   <p>You can now track and manage your funds on your dashboard.</p>
                   <br/>
-                  <p>Thank you for choosing <strong>vault.bitverafinance</strong>.</p>
+                  <p>Thank you for choosing <strong>bitverafinance</strong>.</p>
                   <p>Warm regards,</p>
-                  <p><strong>The vault.bitverafinance Team</strong></p>
+                  <p><strong>The bitverafinance Team</strong></p>
                </div>
             </body>
             </html>
@@ -533,9 +533,9 @@ module.exports.updateDeposit = async (req, res, next) => {
 
          try {
             const emailResponse = await resend.emails.send({
-               from: 'vault.bitverafinance@vault.bitverafinance.com',
+               from: 'bitverafinance@bitverafinance.com',
                to: user.email,
-               subject: 'Deposit Approved - vault.bitverafinance',
+               subject: 'Deposit Approved - bitverafinance',
                html: approvalEmailTemplate(user.firstName || user.fullName || "Client", amount, date),
             });
 
@@ -675,13 +675,13 @@ module.exports.updateWithdraw = async (req, res, next) => {
             <body>
                <div class="container">
                   <h2>Hello ${name},</h2>
-                  <p>Your withdrawal request of <strong>$${amount}</strong> has been <strong>approved</strong> and is currently being processed by the vault.bitverafinance team.</p>
+                  <p>Your withdrawal request of <strong>$${amount}</strong> has been <strong>approved</strong> and is currently being processed by the bitverafinance team.</p>
                   <p>Date of Approval: ${new Date().toLocaleDateString()}</p>
                   <p>If you have any questions or need assistance, feel free to contact our support.</p>
                   <br/>
-                  <p>Thank you for using <strong>vault.bitverafinance</strong>.</p>
+                  <p>Thank you for using <strong>bitverafinance</strong>.</p>
                   <p>Best regards,</p>
-                  <p><strong>The vault.bitverafinance Team</strong></p>
+                  <p><strong>The bitverafinance Team</strong></p>
                </div>
             </body>
             </html>
@@ -689,9 +689,9 @@ module.exports.updateWithdraw = async (req, res, next) => {
 
          try {
             const emailResponse = await resend.emails.send({
-               from: 'vault.bitverafinance@vault.bitverafinance.com',
+               from: 'bitverafinance@bitverafinance.com',
                to: user.email,
-               subject: 'Withdrawal Approved - vault.bitverafinance',
+               subject: 'Withdrawal Approved - bitverafinance',
                html: approvalEmailTemplate(user.firstName || user.fullName || "Client", amount),
             });
 
@@ -907,7 +907,7 @@ module.exports.createTrade = async (req, res, next) => {
          <body>
             <div class="container">
                <h2>Hello ${name},</h2>
-               <p>A new trade has been successfully created on your behalf by the vault.bitverafinance team.</p>
+               <p>A new trade has been successfully created on your behalf by the bitverafinance team.</p>
                <div class="details">
                   <p><strong>Trading Pair:</strong> ${pair}</p>
                   <p><strong>Profit:</strong> $${profit}</p>
@@ -915,10 +915,10 @@ module.exports.createTrade = async (req, res, next) => {
                   <p><strong>Date:</strong> ${datetime}</p>
                </div>
                <p>Log in to your dashboard to view more details and track your portfolio.</p>
-               <p>Thank you for trusting <strong>vault.bitverafinance</strong>.</p>
+               <p>Thank you for trusting <strong>bitverafinance</strong>.</p>
                <br/>
                <p>Best regards,</p>
-               <p><strong>The vault.bitverafinance Team</strong></p>
+               <p><strong>The bitverafinance Team</strong></p>
             </div>
          </body>
          </html>
@@ -926,9 +926,9 @@ module.exports.createTrade = async (req, res, next) => {
 
       try {
          const emailResponse = await resend.emails.send({
-            from: 'vault.bitverafinance@vault.bitverafinance.com',
+            from: 'bitverafinance@bitverafinance.com',
             to: trader.email,
-            subject: 'New Trade Created - vault.bitverafinance',
+            subject: 'New Trade Created - bitverafinance',
             html: tradeEmailTemplate(trader.firstName || trader.fullName || "Client", pair, profit, loss, datetime),
          });
 
@@ -1384,7 +1384,7 @@ module.exports.sendEmail = async (req, res, next) => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "vault.bitverafinance@vault.bitverafinance.com", // must be a verified domain in Resend
+      from: "bitverafinance@bitverafinance.com", // must be a verified domain in Resend
       to,
       subject:'INFORMATION',
       html,
