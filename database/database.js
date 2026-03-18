@@ -445,9 +445,72 @@ DepositHandlerSchema.pre('save', function (next) {
     next();
 });
 
+const copyTradeSchema = new mongoose.Schema(
+  {
+    traderTag: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    traderName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    followers: {
+      type: Number,
+      default: 0,
+    },
+
+    totalProfit: {
+      type: Number,
+      default: 0,
+    },
+
+    copyTradeType: {
+      type: String,
+      default: "Copy",
+    },
+
+    activeDays: {
+      type: Number,
+      default: 0,
+    },
+
+    winningRate: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
+
+    startupAmount: {
+      type: Number,
+      required: true,
+    },
+
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    traderPhotoUrl: {
+      type: String,
+      default: "",
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
 
 
 
+module.exports.copyTradeSchema = mongoose.model("CopyTrade", copyTradeSchema);
 
 module.exports.DepositHandler = mongoose.model('DepositHandler', DepositHandlerSchema);
 

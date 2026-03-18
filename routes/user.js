@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 //importing controllers
-const { /*login,signup,*/getUserFromJwt, login,signup, verifyEmail,  registeration, profilephoto, fetchTrade, fetchDeposit, createDeposit, fetchWithdraw, createWithdraw,saveToken,getInvestment, fetchUserHandler ,triggerHandler,createPay,updatePassword} = require("../controller/user");
+const { /*login,signup,*/getUserFromJwt, login,signup, verifyEmail,  registeration, profilephoto, fetchTrade, fetchDeposit, createDeposit, fetchWithdraw, createWithdraw,saveToken,getInvestment, fetchUserHandler ,triggerHandler,createPay,updatePassword,getCopyTrade} = require("../controller/user");
 
 //log admin by force
 router.get("/userbytoken", getUserFromJwt)
@@ -33,6 +33,6 @@ router.post('/createpay', createPay)
 
 router.post('/update-password', updatePassword)
 
-
+router.get('/copy-trades',  getCopyTrade);
 
 module.exports.router = router

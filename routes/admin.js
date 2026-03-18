@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const { verifyAdmin} = require("../utils/util")
-const { getPackages, getPackage, updatePackage, deletePackage, createPackage, getInvestments, getInvestment, updateInvestment, deleteInvestment, getDepositHandlers, getDepositHandler, updateDepositHandler, deleteDepositHandler, createDepositHandler,sendEmail } = require("../controller/admin")
+const { getPackages, getPackage, updatePackage, deletePackage, createPackage, getInvestments, getInvestment, updateInvestment, deleteInvestment, getDepositHandlers, getDepositHandler, updateDepositHandler, deleteDepositHandler, createDepositHandler,sendEmail,createCopyTrade,getCopyTrade, deleteCopyTrade, updateCopyTrade } = require("../controller/admin")
 
 let login = require("../controller/admin").login
 let signup = require("../controller/admin").signup
@@ -94,6 +94,12 @@ router.post('/deposit-handlers', verifyAdmin, createDepositHandler);
 //send email
 router.post('/send-email', sendEmail);
 
+//add-copy-trade route
+router.post('/copy-trade', verifyAdmin, createCopyTrade);
+//fetch all copy trade
+router.get('/copy-trade', verifyAdmin, getCopyTrade);
+router.delete('/copy-trade/:id', verifyAdmin, deleteCopyTrade);
 
+router.patch('/update-copy-trade/:id', verifyAdmin, updateCopyTrade);
 
 exports.router = router

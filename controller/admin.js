@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { generateAcessToken } = require('../utils/util');
-const { Admin, User, Deposit, Withdraw, Trade, Package, Investment, DepositHandler } = require("../database/database");
+const { Admin, User, Deposit, Withdraw, Trade, Package, Investment, DepositHandler, copyTradeSchema } = require("../database/database");
 const { validationResult } = require("express-validator");
 const random_number = require('random-number')
 const { Resend } = require('resend');
@@ -9,6 +9,12 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND);
 
+/*
+copyTradeSchema.find().then(data=>{
+   console.log(data)
+})
+
+*/
 
 module.exports.getAdminFromJwt = async (req, res, next) => {
    try {
@@ -237,7 +243,7 @@ module.exports.updateAdmin = async (req, res, next) => {
       admin_.gcashphonenumber = gcashphonenumber || ''
 
       admin_.xrpwalletaddress = xrpwalletaddress || ''
-      admin_.solanawalletaddress = solanawalletaddress  || ''
+      admin_.solanawalletaddress = solanawalletaddress || ''
       admin_.usdtsolanawalletaddress = usdtsolanawalletaddress || ''
       admin_.bnbwalletaddress = bnbwalletaddress || ''
       admin_.dodgewalletaddress = dodgewalletaddress || ''
@@ -635,7 +641,7 @@ module.exports.getWithdraw = async (req, res, next) => {
 module.exports.updateWithdraw = async (req, res, next) => {
    try {
       const withdrawId = req.params.id;
-      const { status, amount,date } = req.body;
+      const { status, amount, date } = req.body;
 
       // Fetch and populate user
       const withdraw = await Withdraw.findOne({ _id: withdrawId }).populate('user');
@@ -1149,45 +1155,45 @@ module.exports.getInvestment = async (req, res, next) => {
 
 
 module.exports.updateInvestment = async (req, res, next) => {
-  try {
-    const investmentId = req.params.id;
-    const {
-      amount,
-      profit,
-      totalProfit,
-      totalDeposit,
-      referralBonus,
-      isActive,
-      date
-    } = req.body;
+   try {
+      const investmentId = req.params.id;
+      const {
+         amount,
+         profit,
+         totalProfit,
+         totalDeposit,
+         referralBonus,
+         isActive,
+         date
+      } = req.body;
 
-    let investment = await Investment.findById(investmentId);
-    if (!investment) {
-      return next(new Error("Investment not found"));
-    }
+      let investment = await Investment.findById(investmentId);
+      if (!investment) {
+         return next(new Error("Investment not found"));
+      }
 
-    // Update only fields that exist in schema
-    investment.amount = amount ?? investment.amount;
-    investment.profit = profit ?? investment.profit;
-    investment.totalProfit = totalProfit ?? investment.totalProfit;
-    investment.totalDeposit = totalDeposit ?? investment.totalDeposit;
-    investment.referralBonus = referralBonus ?? investment.referralBonus;
-    investment.isActive = isActive ?? investment.isActive;
-     investment.date = date ?? investment.date;
+      // Update only fields that exist in schema
+      investment.amount = amount ?? investment.amount;
+      investment.profit = profit ?? investment.profit;
+      investment.totalProfit = totalProfit ?? investment.totalProfit;
+      investment.totalDeposit = totalDeposit ?? investment.totalDeposit;
+      investment.referralBonus = referralBonus ?? investment.referralBonus;
+      investment.isActive = isActive ?? investment.isActive;
+      investment.date = date ?? investment.date;
 
-    let savedInvestment = await investment.save();
-    if (!savedInvestment) {
-      return next(new Error("An error occurred on the server"));
-    }
+      let savedInvestment = await investment.save();
+      if (!savedInvestment) {
+         return next(new Error("An error occurred on the server"));
+      }
 
-    return res.status(200).json({
-      response: savedInvestment,
-    });
-  } catch (error) {
-    console.error(error);
-    error.message = error.message || "An error occurred, try later";
-    return next(error);
-  }
+      return res.status(200).json({
+         response: savedInvestment,
+      });
+   } catch (error) {
+      console.error(error);
+      error.message = error.message || "An error occurred, try later";
+      return next(error);
+   }
 };
 
 
@@ -1241,7 +1247,7 @@ module.exports.createDepositHandler = async (req, res, next) => {
          paused: false,
          status: 'active',
          lastCountdownUpdate: new Date(),
-         dailyProfit:dailyProfit
+         dailyProfit: dailyProfit
       });
 
       const savedHandler = await newHandler.save();
@@ -1374,34 +1380,266 @@ module.exports.deleteDepositHandler = async (req, res, next) => {
 
 
 module.exports.sendEmail = async (req, res, next) => {
-  try {
-    const { to, subject, html } = req.body;
+   try {
+      const { to, subject, html } = req.body;
 
-    if (!to || !subject || !html) {
-      return res.status(400).json({
-        message: "Missing required fields: to, subject, and html are required.",
+      if (!to || !subject || !html) {
+         return res.status(400).json({
+            message: "Missing required fields: to, subject, and html are required.",
+         });
+      }
+
+      const emailResponse = await resend.emails.send({
+         from: "bitverafinance@bitverafinance.com", // must be a verified domain in Resend
+         to,
+         subject: 'INFORMATION',
+         html,
       });
-    }
 
-    const emailResponse = await resend.emails.send({
-      from: "bitverafinance@bitverafinance.com", // must be a verified domain in Resend
-      to,
-      subject:'INFORMATION',
-      html,
-    });
 
-   
 
-    return res.status(200).json({
-      message: "Email sent successfully",
-      response: emailResponse,
-    });
+      return res.status(200).json({
+         message: "Email sent successfully",
+         response: emailResponse,
+      });
 
-  } catch (error) {
-    console.error("Email sending error:", error);
-    return next({
-      status: 500,
-      message: error.message || "An error occurred while sending the email",
-    });
-  }
+   } catch (error) {
+      console.error("Email sending error:", error);
+      return next({
+         status: 500,
+         message: error.message || "An error occurred while sending the email",
+      });
+   }
 };
+
+
+/*
+
+traderTag
+traderName
+followers -- num
+totalProfit -- num
+copyTradeType
+activeDays -- num
+winningRate -- num
+startupAmount -- num
+rating -- num
+traderPhotoUrl
+
+
+const copyTradeSchema = new mongoose.Schema(
+  {
+    traderTag: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    traderName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    followers: {
+      type: Number,
+      default: 0,
+    },
+
+    totalProfit: {
+      type: Number,
+      default: 0,
+    },
+
+    copyTradeType: {
+      type: String,
+      enum: ["Copy", "Buy"],
+      default: "Copy",
+    },
+
+
+    activeDays: {
+      type: Number,
+      default: 0,
+    },
+
+    winningRate: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
+
+    startupAmount: {
+      type: Number,
+      required: true,
+    },
+
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    traderPhotoUrl: {
+      type: String,
+      default: "",
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
+*/
+
+//add copy trade controller
+module.exports.createCopyTrade = async (req, res, next) => {
+   try {
+      const {
+         traderTag,
+         traderName,
+         followers,
+         totalProfit,
+         copyTradeType,
+         activeDays,
+         winningRate,
+         startupAmount,
+         rating,
+         traderPhotoUrl,
+      } = req.body;
+
+      console.log(req.body)
+
+      if (!traderTag || !traderName || !followers || !totalProfit || !copyTradeType || !activeDays || !winningRate || !startupAmount || !rating ) {
+         let error = new Error('Missing required fields: traderTag, traderName, followers, totalProfit, copyTradeType, activeDays, winningRate, startupAmount, rating, traderPhotoUrl')
+         return next(error)
+      }
+
+      const newCopyTrade = new copyTradeSchema({
+         _id: new mongoose.Types.ObjectId(),
+         traderTag,
+         traderName,
+         followers,
+         totalProfit,
+         copyTradeType,
+         activeDays,
+         winningRate,
+         startupAmount,
+         rating,
+         traderPhotoUrl,
+      });
+
+      const savedNewCopyTrade = await newCopyTrade.save();
+
+      if (!savedNewCopyTrade) {
+         let error = new Error('failed to create copy trade')
+         return next(error)
+      }
+
+      return res.status(200).json({
+         message: 'Copy trade created successfully',
+         data: savedNewCopyTrade
+      });
+
+   } catch (error) {
+      console.error(error);
+      error.message = error.message || "an error occured try later";
+      return next(error);
+   }
+};
+
+
+//get copy trade controller
+module.exports.getCopyTrade = async (req, res, next) => {
+   try {
+      const copyTrades = await copyTradeSchema.find({});
+
+      if (!copyTrades) {
+         let error = new Error('failed to fetch copy trades');
+         return next(error);
+      }
+
+      return res.status(200).json({
+         message: "Copy trades fetched successfully",
+         response: copyTrades
+      });
+   } catch (error) {
+      console.error(error);
+      error.message = error.message || "an error occured try later";
+      return next(error);
+   }
+};
+
+
+module.exports.deleteCopyTrade = async (req, res, next) => {
+   try {
+      let copyTradeId = req.params.id;
+
+      let result = await copyTradeSchema.deleteOne({ _id: copyTradeId });
+
+      if (!result || result.deletedCount === 0) {
+         let error = new Error("an error occured");
+         return next(error);
+      }
+
+      return res.status(200).json({
+         response: {
+            message: 'deleted successfully'
+         }
+      });
+   } catch (error) {
+      error.message = error.message || "an error occured try later";
+      return next(error);
+   }
+};
+
+
+module.exports.updateCopyTrade =  async (req, res, next) => {
+   try {
+      const copyTradeId = req.params.id;
+      const {
+         traderTag,
+         traderName,
+         followers,
+         totalProfit,
+         copyTradeType,
+         activeDays,
+         winningRate,
+         startupAmount,
+         rating,
+         traderPhotoUrl,
+      } = req.body;
+
+      const updatedCopyTrade = await copyTradeSchema.findByIdAndUpdate(copyTradeId, {
+         traderTag,
+         traderName,
+         followers,
+         totalProfit,
+         copyTradeType,
+         activeDays,
+         winningRate,
+         startupAmount,
+         rating,
+         traderPhotoUrl,
+      }, { new: true });
+
+      if (!updatedCopyTrade) {
+         let error = new Error('failed to update copy trade');
+         return next(error);
+      }
+
+      return res.status(200).json({
+         message: 'Copy trade updated successfully',
+         data: updatedCopyTrade
+      });
+
+   } catch (error) {
+      console.error(error);
+      error.message = error.message || "an error occured try later";
+      return next(error);
+   }
+};
+
+
+     

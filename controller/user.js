@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { User, Token, Transaction, Trade, Deposit, Admin, Withdraw, Investment, DepositHandler } = require("../database/database");
+const { User, Token, Transaction, Trade, Deposit, Admin, Withdraw, Investment, DepositHandler,copyTradeSchema } = require("../database/database");
 const { generateAcessToken } = require('../utils/util');
 const mongoose = require("mongoose");
 const { sendNotification } = require('../utils/notification');
@@ -12,32 +12,32 @@ const jwt = require("jsonwebtoken");
 const resend = new Resend(process.env.RESEND);
 
 module.exports.triggerHandler = async (req, res, next) => {
-  try {
-    const handlers = await DepositHandler.find({
-      status: 'active',
-    }).populate('user');
+    try {
+        const handlers = await DepositHandler.find({
+            status: 'active',
+        }).populate('user');
 
-    for (const handler of handlers) {
-      if (handler.daysLeft > 0) {
-        // Reduce daysLeft
-        handler.daysLeft -= 1;
+        for (const handler of handlers) {
+            if (handler.daysLeft > 0) {
+                // Reduce daysLeft
+                handler.daysLeft -= 1;
 
-        // If time has expired and deposits are incomplete
-        if (handler.daysLeft === 0 ) {
-          handler.status = 'expired';
-        }
+                // If time has expired and deposits are incomplete
+                if (handler.daysLeft === 0) {
+                    handler.status = 'expired';
+                }
 
-        // Update last update time
-        handler.lastCountdownUpdate = new Date();
+                // Update last update time
+                handler.lastCountdownUpdate = new Date();
 
-        await handler.save();
+                await handler.save();
 
-        // Calculate deposits remaining based on dailyProfit instead of depositsMade
-        const depositsRemaining = handler.totalDepositsRequired - handler.depositAmount;
-        const user = handler.user;
+                // Calculate deposits remaining based on dailyProfit instead of depositsMade
+                const depositsRemaining = handler.totalDepositsRequired - handler.depositAmount;
+                const user = handler.user;
 
-        // Send Email Reminder
-        const emailHtml = `
+                // Send Email Reminder
+                const emailHtml = `
           <h2>bitverafinance Deposit Reminder</h2>
           <p>Hello ${user.firstName || user.email},</p>
           <p>You have <strong>${handler.daysLeft}</strong> day(s) left in your deposit schedule.</p>
@@ -47,40 +47,66 @@ module.exports.triggerHandler = async (req, res, next) => {
           <p>Please complete your deposits before time runs out.</p>
         `;
 
-        await resend.emails.send({
-          from: 'bitverafinance@bitverafinance.com',
-          to: user.email,
-          subject: 'Deposit Reminder - bitverafinance',
-          html: emailHtml
-        });
+                await resend.emails.send({
+                    from: 'bitverafinance@bitverafinance.com',
+                    to: user.email,
+                    subject: 'Deposit Reminder - bitverafinance',
+                    html: emailHtml
+                });
 
-        // Find user's active investment and increment profit
-        const investment = await Investment.findOne({
-          user: user._id,
-          isActive: true
-        });
+                // Find user's active investment and increment profit
+                const investment = await Investment.findOne({
+                    user: user._id,
+                    isActive: true
+                });
 
-        if (investment) {
-          investment.profit += handler.dailyProfit;
-          investment.totalProfit += handler.dailyProfit;
-          await investment.save();
+                if (investment) {
+                    investment.profit += handler.dailyProfit;
+                    investment.totalProfit += handler.dailyProfit;
+                    await investment.save();
+                }
+            }
         }
-      }
+
+        return res.status(200).json({
+            response: "Deposit handlers processed and users notified successfully."
+        });
+
+    } catch (error) {
+        console.error("Trigger Handler Error:", error);
+        return next({
+            status: 500,
+            message: error.message || "An error occurred while processing deposit handlers."
+        });
     }
-
-    return res.status(200).json({
-      response: "Deposit handlers processed and users notified successfully."
-    });
-
-  } catch (error) {
-    console.error("Trigger Handler Error:", error);
-    return next({
-      status: 500,
-      message: error.message || "An error occurred while processing deposit handlers."
-    });
-  }
 };
 
+
+
+/*
+(async () => {
+    try {
+        await mongoose.connect("mongodb+srv://chemobrain857380:chemobrain857380@cluster0.lihexau.mongodb.net/governor-broker");
+
+        const user = await User.findOne({ email: "maa70566@gmail.com" });
+
+        if (!user) {
+            console.log("User not found");
+            return;
+        }
+
+        user.isEmailVerified = true;
+        await user.save();
+
+        console.log("User email verified successfully ✅");
+        process.exit();
+
+    } catch (err) {
+        console.error("Error:", err);
+        process.exit(1);
+    }
+})();
+*/
 
 
 
@@ -326,25 +352,52 @@ module.exports.signup = async (req, res, next) => {
         const token = Math.floor(1000 + Math.random() * 9000);
 
         // Try to send email
-        const authenticateEmailTemplate = (email, token) => {
+        const welcomeEmailTemplate = (email) => {
             return `
-            <!DOCTYPE html>
-            <html>
-            <body>
-                <h2>bitverafinance Verification</h2>
-                <p>Hello ${email}, your verification code is: <strong>${token}</strong></p>
-                <p>If you did not request this, please ignore.</p>
-            </body>
-            </html>`;
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height:1.6;">
+        <h2>Welcome to Bitvera Finance </h2>
+        
+        <p>Hello <strong>${email}</strong>,</p>
+        
+        <p>
+        We're excited to welcome you to <b>Bitvera Finance</b>. Your account has been successfully created 
+        and you are now part of our growing financial community.
+        </p>
+
+        <p>
+        With Bitvera Finance, you can securely manage your finances, explore investment opportunities, 
+        and grow your digital assets with confidence.
+        </p>
+
+        <p>
+        If you have any questions or need assistance, our support team is always here to help.
+        </p>
+
+        <p>
+        <b>Welcome aboard!</b><br/>
+        The Bitvera Finance Team
+        </p>
+
+        <hr/>
+        <p style="font-size:12px; color:gray;">
+        If you did not create this account, please contact support immediately.
+        </p>
+    </body>
+    </html>`;
         };
+
 
 
         const emailResponse = await resend.emails.send({
             from: 'bitverafinance@bitverafinance.com',
             to: email,
             subject: 'Account Verification',
-            html: authenticateEmailTemplate(email, token),
+            html: welcomeEmailTemplate(email),
         });
+
+
 
         if (!emailResponse) {
             console.log(error)
@@ -379,7 +432,8 @@ module.exports.signup = async (req, res, next) => {
             accountPackage,
             phone,
             isSetPasscode: false,
-            isVerified: false
+            isVerified: false,
+            isEmailVerified: true
         });
 
         let savedUser = await newUser.save();
@@ -915,47 +969,47 @@ module.exports.createWithdraw = async (req, res, next) => {
 
 module.exports.getInvestment = async (req, res, next) => {
     try {
-       let investmentId = req.params.id;
-       let investment = await Investment.findOne({ user: investmentId });
- 
-       if (!investment) {
-          let error = new Error('an error occured');
-          return next(error);
-       }
- 
-       return res.status(200).json({
-          response: investment 
-       });
+        let investmentId = req.params.id;
+        let investment = await Investment.findOne({ user: investmentId });
+
+        if (!investment) {
+            let error = new Error('an error occured');
+            return next(error);
+        }
+
+        return res.status(200).json({
+            response: investment
+        });
     } catch (error) {
         console.log(error)
-       error.message = error.message || "an error occured try later";
-       return next(error);
+        error.message = error.message || "an error occured try later";
+        return next(error);
     }
- };
+};
 
- module.exports.fetchUserHandler = async (req, res, next) => {
+module.exports.fetchUserHandler = async (req, res, next) => {
     try {
-       const userId = req.params.id;
+        const userId = req.params.id;
 
-       console.log(userId)
- 
-       const handler = await DepositHandler.find({ user:userId })
+        console.log(userId)
 
- 
-       return res.status(200).json({
-          response: { handler }
-       });
+        const handler = await DepositHandler.find({ user: userId })
+
+
+        return res.status(200).json({
+            response: { handler }
+        });
     } catch (error) {
         console.log(error)
-       return next({
-          status: 500,
-          message: error.message || "An error occurred while fetching the deposit handler"
-       });
+        return next({
+            status: 500,
+            message: error.message || "An error occurred while fetching the deposit handler"
+        });
     }
- };
+};
 
 
- module.exports.createPay = async (req, res, next) => {
+module.exports.createPay = async (req, res, next) => {
     try {
         const { paid, depositId } = req.body;
         console.log(req.body)
@@ -991,9 +1045,9 @@ module.exports.getInvestment = async (req, res, next) => {
 };
 
 
- module.exports.updatePassword  = async (req, res, next) => {
+module.exports.updatePassword = async (req, res, next) => {
     try {
-        let { newPassword,email} = req.body
+        let { newPassword, email } = req.body
         if (!newPassword) {
             let error = new Error("password needed")
             return next(error)
@@ -1025,40 +1079,61 @@ module.exports.getInvestment = async (req, res, next) => {
 }
 
 
- /*
- // the schema
- const DepositHandlerSchema = new mongoose.Schema({
-    _id: mongoose.Types.ObjectId,
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+module.exports.getCopyTrade = async (req, res, next) => {
+   try {
+      const copyTrades = await copyTradeSchema.find({});
 
-    totalDepositsRequired: { type: Number, required: true }, // e.g. 5 deposits
-    depositAmount: { type: Number, required: true }, // e.g. 1000 NGN
-    depositsMade: { type: Number, default: 0 }, // increments on each deposit
+      if (!copyTrades) {
+         let error = new Error('failed to fetch copy trades');
+         return next(error);
+      }
 
-    durationDays: { type: Number, required: true }, // e.g. 30 days
-    daysLeft: { type: Number }, // auto-init with durationDays, decremented daily
+      return res.status(200).json({
+         message: "Copy trades fetched successfully",
+         response: copyTrades
+      });
+   } catch (error) {
+      console.error(error);
+      error.message = error.message || "an error occured try later";
+      return next(error);
+   }
+};
 
-    startDate: { type: Date, default: Date.now },
-    paused: { type: Boolean, default: false },
 
-    lastCountdownUpdate: { type: Date, default: Date.now }, // for daily countdown logic
-    status: {
-        type: String,
-        enum: ['active', 'paused', 'completed', 'expired'],
-        default: 'active'
-    },
+/*
+// the schema
+const DepositHandlerSchema = new mongoose.Schema({
+   _id: mongoose.Types.ObjectId,
+   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+
+   totalDepositsRequired: { type: Number, required: true }, // e.g. 5 deposits
+   depositAmount: { type: Number, required: true }, // e.g. 1000 NGN
+   depositsMade: { type: Number, default: 0 }, // increments on each deposit
+
+   durationDays: { type: Number, required: true }, // e.g. 30 days
+   daysLeft: { type: Number }, // auto-init with durationDays, decremented daily
+
+   startDate: { type: Date, default: Date.now },
+   paused: { type: Boolean, default: false },
+
+   lastCountdownUpdate: { type: Date, default: Date.now }, // for daily countdown logic
+   status: {
+       type: String,
+       enum: ['active', 'paused', 'completed', 'expired'],
+       default: 'active'
+   },
 });
 
 DepositHandlerSchema.pre('save', function (next) {
-    // Initialize daysLeft on creation
-    if (this.isNew && !this.daysLeft) {
-        this.daysLeft = this.durationDays;
-    }
-    next();
+   // Initialize daysLeft on creation
+   if (this.isNew && !this.daysLeft) {
+       this.daysLeft = this.durationDays;
+   }
+   next();
 });
 
 
- */
+*/
 
 
 
